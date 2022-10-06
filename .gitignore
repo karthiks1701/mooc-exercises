@@ -14,3 +14,5 @@ catkin_ws/.catkin_tools/
 *resolved
 .ipynb_checkpoints
 *-filtered*
+ros-template/logs/agent_2022-09-22-18-35-46_simulation.bag
+ros-template/logs/stark_2022-09-22-18-27-27_hardware.bag
