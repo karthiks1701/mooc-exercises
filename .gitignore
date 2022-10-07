@@ -16,3 +16,6 @@ catkin_ws/.catkin_tools/
 *-filtered*
 ros-template/logs/agent_2022-09-22-18-35-46_simulation.bag
 ros-template/logs/stark_2022-09-22-18-27-27_hardware.bag
+modcon/assets/calibrations/camera_extrinsic/stark.yaml
+modcon/assets/calibrations/camera_intrinsic/stark.yaml
+modcon/assets/calibrations/kinematics/stark.yaml

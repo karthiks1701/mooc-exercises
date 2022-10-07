@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[124]:
+# In[41]:
 
 
 import numpy as np
@@ -48,8 +48,8 @@ def PIDController(
 
     # controller coefficients
     Kp = 0.1
-    Ki = 0.000000
-    Kd = 5
+    Ki = 0.0001
+    Kd = 8
     
     # PID controller for omega
     omega = Kp*e_y + Ki*e_int_y + Kd*e_der_y
