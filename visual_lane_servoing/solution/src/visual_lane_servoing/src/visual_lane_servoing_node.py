@@ -192,6 +192,10 @@ class LaneServoingNode(DTROS):
         # Call the user-defined function to get the masks for the left
         # and right lane markings
         (lt_mask, rt_mask) = visual_servoing_activity.detect_lane_markings(image)
+        
+        self.log(np.count_nonzero(lt_mask))
+        self.log(np.count_nonzero(rt_mask))
+        
 
         # Publish these out for visualization
         lt_mask_viz = cv2.addWeighted(cv2.cvtColor(image, cv2.COLOR_BGR2GRAY), 0.1,
