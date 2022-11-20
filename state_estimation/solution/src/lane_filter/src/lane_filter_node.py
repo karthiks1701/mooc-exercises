@@ -54,8 +54,6 @@ class LaneFilterNode(DTROS):
 
         # Create the filter
         self.filter = LaneFilterHistogram(**self._filter)
-        self.t_last_update = rospy.get_time()
-        self.last_update_stamp = self.t_last_update
 
         # Subscribers
         self.sub_segment_list = rospy.Subscriber(
@@ -87,6 +85,8 @@ class LaneFilterNode(DTROS):
         self.left_encoder_ticks = 0
         self.right_encoder_ticks_delta = 0
         self.left_encoder_ticks_delta = 0
+        self.last_encoder_stamp = None
+        
         # Set up a timer for prediction (if we got encoder data) since that data can come very quickly
         rospy.Timer(rospy.Duration(1 / self._predict_freq), self.cbPredict)
 
@@ -101,23 +101,22 @@ class LaneFilterNode(DTROS):
             self.filter.encoder_resolution = left_encoder_msg.resolution
             self.filter.initialized = True
         self.left_encoder_ticks_delta = left_encoder_msg.data - self.left_encoder_ticks
+        self.last_encoder_stamp = left_encoder_msg.header.stamp
 
     def cbProcessRightEncoder(self, right_encoder_msg):
         if not self.filter.initialized:
             self.filter.encoder_resolution = right_encoder_msg.resolution
             self.filter.initialized = True
         self.right_encoder_ticks_delta = right_encoder_msg.data - self.right_encoder_ticks
+        self.last_encoder_stamp = right_encoder_msg.header.stamp
+        
 
     def cbPredict(self, event):
-        current_time = rospy.get_time()
-        dt = current_time - self.t_last_update
-        self.t_last_update = current_time
-
         # first let's check if we moved at all, if not abort
         if self.right_encoder_ticks_delta == 0 and self.left_encoder_ticks_delta == 0:
             return
 
-        self.filter.predict(dt, self.left_encoder_ticks_delta, self.right_encoder_ticks_delta)
+        self.filter.predict(self.left_encoder_ticks_delta, self.right_encoder_ticks_delta)
         self.left_encoder_ticks += self.left_encoder_ticks_delta
         self.right_encoder_ticks += self.right_encoder_ticks_delta
         self.left_encoder_ticks_delta = 0
@@ -132,8 +131,11 @@ class LaneFilterNode(DTROS):
             segment_list_msg (:obj:`SegmentList`): message containing list of processed segments
 
         """
+        # update
+        self.filter.update(segment_list_msg.segments.header.stamp)
 
-        self.last_update_stamp = segment_list_msg.header.stamp
+        # publish
+        self.publishEstimate(segment_list_msg.segments.header.stamp)
 
         # Get actual timestamp for latency measurement
         timestamp_before_processing = rospy.Time.now()
@@ -146,8 +148,6 @@ class LaneFilterNode(DTROS):
     def publishEstimate(self, timestamp):
 
         [d_max, phi_max] = self.filter.getEstimate()
-        # print "d_max = ", d_max
-        # print "phi_max = ", phi_max
 
         # build lane pose message to send
         lanePose = LanePose()
