@@ -151,7 +151,7 @@ class LaneFilterNode(DTROS):
 
         # build lane pose message to send
         lanePose = LanePose()
-        lanePose.header.stamp = rospy.Time.now()
+        lanePose.header.stamp = timestamp
         lanePose.d = d_max
         lanePose.phi = phi_max
         lanePose.in_lane = True
